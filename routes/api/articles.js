@@ -94,4 +94,31 @@ router.put("/:id", (req, res) => {
   });
 });
 
+// Delete article
+router.delete("/:id", (req, res) => {
+  fs.readFile("./news.json", "utf-8", (err, data) => {
+    if (err) {
+      throw err;
+    }
+    const parsedData = JSON.parse(data);
+    const foundIndex = parsedData.findIndex(
+      article => article.id === +req.params.id
+    );
+
+    if (foundIndex !== -1) {
+      parsedData.splice(foundIndex, 1);
+      fs.writeFile("./news.json", JSON.stringify(parsedData), err => {
+        if (err) {
+          throw err;
+        }
+        return res.status(200).json({ message: "Article deleted" });
+      });
+    } else {
+      res.status(400).json({
+        message: `No article with the id of ${req.params.id} was found`
+      });
+    }
+  });
+});
+
 export { router };
