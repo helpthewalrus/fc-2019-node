@@ -28,14 +28,13 @@ router.get("/:id", (req, res) => {
     }
 
     return res.status(400).json({
-      message: `No member with the id of ${req.params.id} was found`
+      message: `No article with the id of ${req.params.id} was found`
     });
   });
 });
 
 // Create article
 router.post("/", (req, res) => {
-  // res.send(req.body);
   const newArticle = {
     id: uuid.v4(),
     author: req.body.author,
@@ -63,8 +62,35 @@ router.post("/", (req, res) => {
       if (err) {
         throw err;
       }
-      return res.status(200).json({ message: "Article added" });
+      res.status(200).json({ message: "Article added" });
     });
+  });
+});
+
+// Update article
+router.put("/:id", (req, res) => {
+  fs.readFile("./news.json", "utf-8", (err, data) => {
+    if (err) {
+      throw err;
+    }
+    const parsedData = JSON.parse(data);
+    const foundIndex = parsedData.findIndex(
+      article => article.id === +req.params.id
+    );
+
+    if (foundIndex !== -1) {
+      parsedData[foundIndex] = { ...parsedData[foundIndex], ...req.body };
+      fs.writeFile("./news.json", JSON.stringify(parsedData), err => {
+        if (err) {
+          throw err;
+        }
+        return res.status(200).json({ message: "Article updated" });
+      });
+    } else {
+      res.status(400).json({
+        message: `No article with the id of ${req.params.id} was found`
+      });
+    }
   });
 });
 
