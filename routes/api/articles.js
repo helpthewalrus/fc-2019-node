@@ -3,22 +3,23 @@ import fs from "fs";
 import uuid from "uuid";
 
 const router = express.Router();
+const FILENAME = "./news.json";
 
 // Get all articles
-router.get("/", (req, res) => {
-  fs.readFile("./news.json", "utf-8", (err, data) => {
+router.get("/", (req, res, next) => {
+  fs.readFile(FILENAME, "utf-8", (err, data) => {
     if (err) {
-      throw err;
+      next(new Error(`NO SUCH FILE (${FILENAME}) FOUND`));
     }
     res.type("json").send(data);
   });
 });
 
 // Get single article
-router.get("/:id", (req, res) => {
-  fs.readFile("./news.json", "utf-8", (err, data) => {
+router.get("/:id", (req, res, next) => {
+  fs.readFile(FILENAME, "utf-8", (err, data) => {
     if (err) {
-      throw err;
+      next(`NO SUCH FILE (${FILENAME}) FOUND`);
     }
     const parsedData = JSON.parse(data);
     const found = parsedData.find(article => article.id === +req.params.id);
@@ -34,7 +35,7 @@ router.get("/:id", (req, res) => {
 });
 
 // Create article
-router.post("/", (req, res) => {
+router.post("/", (req, res, next) => {
   const newArticle = {
     id: uuid.v4(),
     author: req.body.author,
@@ -49,18 +50,17 @@ router.post("/", (req, res) => {
     return res.status(400).json({ message: "Please include title and url" });
   }
 
-  fs.readFile("./news.json", "utf-8", (err, data) => {
+  fs.readFile(FILENAME, "utf-8", (err, data) => {
     if (err) {
-      throw err;
+      next(`NO SUCH FILE (${FILENAME}) FOUND`);
     }
 
     const combinedData = [...JSON.parse(data), newArticle];
     const stringifiedData = JSON.stringify(combinedData);
-    console.log(stringifiedData);
 
-    fs.writeFile("./news.json", stringifiedData, err => {
+    fs.writeFile(FILENAME, stringifiedData, err => {
       if (err) {
-        throw err;
+        next(`NO SUCH FILE (${FILENAME}) FOUND`);
       }
       res.status(200).json({ message: "Article added" });
     });
@@ -68,10 +68,10 @@ router.post("/", (req, res) => {
 });
 
 // Update article
-router.put("/:id", (req, res) => {
-  fs.readFile("./news.json", "utf-8", (err, data) => {
+router.put("/:id", (req, res, next) => {
+  fs.readFile(FILENAME, "utf-8", (err, data) => {
     if (err) {
-      throw err;
+      next(`NO SUCH FILE (${FILENAME}) FOUND`);
     }
     const parsedData = JSON.parse(data);
     const foundIndex = parsedData.findIndex(
@@ -80,9 +80,9 @@ router.put("/:id", (req, res) => {
 
     if (foundIndex !== -1) {
       parsedData[foundIndex] = { ...parsedData[foundIndex], ...req.body };
-      fs.writeFile("./news.json", JSON.stringify(parsedData), err => {
+      fs.writeFile(FILENAME, JSON.stringify(parsedData), err => {
         if (err) {
-          throw err;
+          next(`NO SUCH FILE (${FILENAME}) FOUND`);
         }
         return res.status(200).json({ message: "Article updated" });
       });
@@ -95,10 +95,10 @@ router.put("/:id", (req, res) => {
 });
 
 // Delete article
-router.delete("/:id", (req, res) => {
-  fs.readFile("./news.json", "utf-8", (err, data) => {
+router.delete("/:id", (req, res, next) => {
+  fs.readFile(FILENAME, "utf-8", (err, data) => {
     if (err) {
-      throw err;
+      next(`NO SUCH FILE (${FILENAME}) FOUND`);
     }
     const parsedData = JSON.parse(data);
     const foundIndex = parsedData.findIndex(
@@ -107,9 +107,9 @@ router.delete("/:id", (req, res) => {
 
     if (foundIndex !== -1) {
       parsedData.splice(foundIndex, 1);
-      fs.writeFile("./news.json", JSON.stringify(parsedData), err => {
+      fs.writeFile(FILENAME, JSON.stringify(parsedData), err => {
         if (err) {
-          throw err;
+          next(`NO SUCH FILE (${FILENAME}) FOUND`);
         }
         return res.status(200).json({ message: "Article deleted" });
       });
