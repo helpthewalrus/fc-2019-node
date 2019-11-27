@@ -1,6 +1,8 @@
 import fs from "fs";
 import uuid from "uuid";
 
+import { Article } from "../components/Article.js";
+
 const FILENAME = "./news.json";
 
 // Get all articles
@@ -34,15 +36,17 @@ const getArticleUtility = (req, res, next) => {
 
 // Create article
 const createArticleUtility = (req, res, next) => {
-  const newArticle = {
-    id: uuid.v4(),
-    author: req.body.author,
-    title: req.body.title,
-    description: req.body.description,
-    url: req.body.url,
-    urlToImage: req.body.urlToImage,
-    publishedAt: req.body.publishedAt
-  };
+  const { author, title, description, url, urlToImage, publishedAt } = req.body;
+
+  const newArticle = new Article(
+    uuid.v4(),
+    author,
+    title,
+    description,
+    url,
+    urlToImage,
+    publishedAt
+  );
 
   if (!newArticle.title || !newArticle.url) {
     return res.status(400).json({ message: "Please include title and url" });
