@@ -1,6 +1,8 @@
+import uuid from "uuid";
+
 export class Article {
-  constructor(id, author, title, description, url, urlToImage, publishedAt) {
-    this.id = id;
+  constructor({ author, title, description, url, urlToImage, publishedAt }) {
+    this.id = uuid.v4();
     this.author = author;
     this.title = title;
     this.description = description;

@@ -1,5 +1,4 @@
 import fs from "fs";
-import uuid from "uuid";
 
 import { Article } from "../components/Article.js";
 
@@ -42,17 +41,7 @@ export const sendArticleMiddleware = (req, res, next) => {
 };
 
 export const createArticleMiddleware = (req, res, next) => {
-  const { author, title, description, url, urlToImage, publishedAt } = req.body;
-
-  const newArticle = new Article(
-    uuid.v4(),
-    author,
-    title,
-    description,
-    url,
-    urlToImage,
-    publishedAt
-  );
+  const newArticle = new Article(req.body);
 
   if (!newArticle.title || !newArticle.url) {
     return res.status(400).json({ message: "Please include title and url" });
