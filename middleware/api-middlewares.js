@@ -1,89 +1,77 @@
-import fs from "fs";
-
-import { Article } from "../components/Article.js";
+import {
+  readData,
+  writeData,
+  addNewArticle,
+  findArticle,
+  modifyArticle
+} from "../utils/dataUtils.js";
 
 const FILENAME = "./news.json";
 
-export const readMiddleware = (req, res, next) => {
-  fs.readFile(FILENAME, "utf-8", (err, data) => {
-    if (err) {
-      next(new Error(`NO SUCH FILE (${FILENAME}) FOUND`));
-    }
-    req.data = data;
-    next();
-  });
-};
-
-export const writeMiddleware = (req, res, next) => {
-  fs.writeFile(FILENAME, JSON.stringify(req.combinedData), err => {
-    if (err) {
-      next(`NO SUCH FILE (${FILENAME}) FOUND`);
-    }
-    res.status(200).json({ message: `Article ${req.articleStatus}` });
-    next();
-  });
-};
-
-export const sendArticlesMiddleware = (req, res) =>
-  res.type("json").send(req.data);
-
-export const sendArticleMiddleware = (req, res, next) => {
-  const parsedData = JSON.parse(req.data);
-  const found = parsedData.find(article => article.id === +req.params.id);
-
-  if (found) {
-    return res.type("json").send(found);
-  }
-
-  return res.status(400).json({
-    message: `No article with the id of ${req.params.id} was found`
-  });
-};
-
-export const createArticleMiddleware = (req, res, next) => {
-  const newArticle = new Article(req.body);
-
-  if (!newArticle.title || !newArticle.url) {
-    return res.status(400).json({ message: "Please include title and url" });
-  }
-  const combinedData = [...JSON.parse(req.data), newArticle];
-  req.combinedData = combinedData;
-  req.articleStatus = "added";
+export const readMiddleware = async (req, res, next) => {
+  const data = await readData(FILENAME).catch(err => next(err));
+  req.data = data;
   next();
 };
 
-export const updateArticleMiddleware = (req, res, next) => {
-  const parsedData = JSON.parse(req.data);
-  const foundIndex = parsedData.findIndex(
-    article => article.id === +req.params.id
-  );
+export const writeMiddleware = async (req, res, next) => {
+  await writeData(FILENAME, req.combinedData).catch(err => next(err));
+  req.data = { message: `Article ${req.articleStatus}` };
+  next();
+};
 
-  if (foundIndex !== -1) {
-    parsedData[foundIndex] = { ...parsedData[foundIndex], ...req.body };
-    req.combinedData = parsedData;
-    req.articleStatus = "updated";
+export const sendResponseMiddleware = (req, res) =>
+  res
+    .status(200)
+    .type("json")
+    .send(req.data);
+
+export const sendArticleMiddleware = (req, res, next) => {
+  const foundArticle = findArticle(req);
+  if (foundArticle) {
+    req.data = foundArticle;
     next();
   } else {
-    res.status(400).json({
-      message: `No article with the id of ${req.params.id} was found`
-    });
+    const error = new Error(
+      `No article with the id of ${req.params.id} was found`
+    );
+    next(error);
   }
 };
 
-export const deleteArticleMiddleware = (req, res, next) => {
-  const parsedData = JSON.parse(req.data);
-  const foundIndex = parsedData.findIndex(
-    article => article.id === +req.params.id
-  );
+export const createArticleMiddleware = (req, res, next) => {
+  const { title, url } = req.body;
 
-  if (foundIndex !== -1) {
-    parsedData.splice(foundIndex, 1);
+  if (!title || !url) {
+    const error = new Error("Please include title and url");
+    next(error);
+  } else {
+    const combinedData = addNewArticle(req);
+    req.combinedData = combinedData;
+    req.articleStatus = "added";
+    next();
+  }
+};
+
+export const modifyArticleMiddleware = (req, res, next) => {
+  const parsedData = modifyArticle(req);
+
+  if (parsedData) {
     req.combinedData = parsedData;
-    req.articleStatus = "deleted";
+    switch (req.method) {
+      case "DELETE":
+        req.articleStatus = "deleted";
+        break;
+
+      default:
+        req.articleStatus = "updated";
+        break;
+    }
     next();
   } else {
-    res.status(400).json({
-      message: `No article with the id of ${req.params.id} was found`
-    });
+    const error = new Error(
+      `No article with the id of ${req.params.id} was found`
+    );
+    next(error);
   }
 };

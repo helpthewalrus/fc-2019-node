@@ -3,32 +3,44 @@ import express from "express";
 import {
   readMiddleware,
   writeMiddleware,
-  sendArticlesMiddleware,
+  sendResponseMiddleware,
   sendArticleMiddleware,
   createArticleMiddleware,
-  updateArticleMiddleware,
-  deleteArticleMiddleware
+  modifyArticleMiddleware
 } from "../../middleware/api-middlewares.js";
 
-const router = express.Router();
+export const router = express.Router();
 
 // Get all articles
-router.get("/", [readMiddleware, sendArticlesMiddleware]);
+router.get("/", [readMiddleware, sendResponseMiddleware]);
 
 // Get single article
-router.get("/:id", [readMiddleware, sendArticleMiddleware]);
+router.get("/:id", [
+  readMiddleware,
+  sendArticleMiddleware,
+  sendResponseMiddleware
+]);
 
 // Create article
-router.post("/", [readMiddleware, createArticleMiddleware, writeMiddleware]);
+router.post("/", [
+  readMiddleware,
+  createArticleMiddleware,
+  writeMiddleware,
+  sendResponseMiddleware
+]);
 
 // Update article
-router.put("/:id", [readMiddleware, updateArticleMiddleware, writeMiddleware]);
+router.put("/:id", [
+  readMiddleware,
+  modifyArticleMiddleware,
+  writeMiddleware,
+  sendResponseMiddleware
+]);
 
 // Delete article
 router.delete("/:id", [
   readMiddleware,
-  deleteArticleMiddleware,
-  writeMiddleware
+  modifyArticleMiddleware,
+  writeMiddleware,
+  sendResponseMiddleware
 ]);
-
-export { router };
