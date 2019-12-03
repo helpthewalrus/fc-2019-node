@@ -1,17 +1,20 @@
-import {
-  readData,
-  writeData,
-  addNewArticle,
-  findArticle,
-  modifyArticle
-} from "../utils/dataUtils.js";
+import mongoose from "mongoose";
+
+import { Article } from "../api/models/article.js";
 
 const FILENAME = "./news.json";
 
 export const readMiddleware = async (req, res, next) => {
-  const data = await readData(FILENAME).catch(err => next(err));
-  req.data = data;
-  next();
+  Article.find()
+    .exec()
+    .then(articles => {
+      req.data = articles;
+      next();
+    })
+    .catch(err => {
+      const error = new Error("No articles were found");
+      next(error);
+    });
 };
 
 export const writeMiddleware = async (req, res, next) => {
@@ -20,23 +23,27 @@ export const writeMiddleware = async (req, res, next) => {
   next();
 };
 
-export const sendResponseMiddleware = (req, res) =>
+export const sendResponseMiddleware = (req, res) => {
   res
     .status(200)
     .type("json")
     .send(req.data);
+};
 
 export const sendArticleMiddleware = (req, res, next) => {
-  const foundArticle = findArticle(req);
-  if (foundArticle) {
-    req.data = foundArticle;
-    next();
-  } else {
-    const error = new Error(
-      `No article with the id of ${req.params.id} was found`
-    );
-    next(error);
-  }
+  const articleId = req.params.id;
+  Article.findById(articleId)
+    .exec()
+    .then(article => {
+      req.data = article;
+      next();
+    })
+    .catch(err => {
+      const error = new Error(
+        `No article with the id of ${req.params.id} was found`
+      );
+      next(error);
+    });
 };
 
 export const createArticleMiddleware = (req, res, next) => {
@@ -46,32 +53,49 @@ export const createArticleMiddleware = (req, res, next) => {
     const error = new Error("Please include title and url");
     next(error);
   } else {
-    const combinedData = addNewArticle(req);
-    req.combinedData = combinedData;
-    req.articleStatus = "added";
-    next();
+    const newArticle = new Article({
+      _id: new mongoose.Types.ObjectId(),
+      ...req.body
+    });
+    newArticle
+      .save()
+      .then(() => {
+        req.data = { message: "Article added", articleData: newArticle };
+        next();
+      })
+      .catch(() => {
+        const error = new Error("No article was added");
+        next(error);
+      });
   }
 };
 
-export const modifyArticleMiddleware = (req, res, next) => {
-  const parsedData = modifyArticle(req);
+export const updateArticleMiddleware = (req, res, next) => {
+  const articleId = req.params.id;
+  Article.update({ _id: articleId }, { $set: { ...req.body } })
+    .exec()
+    .then(() => {
+      req.data = { message: "Article updated", articleData: req.body };
+      next();
+    })
+    .catch(() => {
+      const error = new Error("No article was updated");
+      next(error);
+    });
+};
 
-  if (parsedData) {
-    req.combinedData = parsedData;
-    switch (req.method) {
-      case "DELETE":
-        req.articleStatus = "deleted";
-        break;
-
-      default:
-        req.articleStatus = "updated";
-        break;
-    }
-    next();
-  } else {
-    const error = new Error(
-      `No article with the id of ${req.params.id} was found`
-    );
-    next(error);
-  }
+export const deleteArticleMiddleware = (req, res, next) => {
+  const articleId = req.params.id;
+  Article.remove({ _id: articleId })
+    .exec()
+    .then(() => {
+      req.data = { message: `Article with id ${articleId} was deleted` };
+      next();
+    })
+    .catch(() => {
+      const error = new Error(
+        `No article with the id of ${articleId} was found`
+      );
+      next(error);
+    });
 };
