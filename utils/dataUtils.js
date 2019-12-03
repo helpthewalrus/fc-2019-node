@@ -3,7 +3,7 @@ import { Article } from "../components/Article.js";
 
 export const readData = async filePath => {
   return await fs.readFile(filePath, "utf-8").catch(() => {
-    throw new Error("CAN'T READ FILE");
+    throw new Error("FILE CAN'T BE READ");
   });
 };
 
