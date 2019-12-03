@@ -1,7 +1,13 @@
 import express from "express";
+import mongoose from "mongoose";
 
-import { router } from "./routes/api/articles.js";
+import { router } from "./api/routes/articles.js";
 import { logger } from "./middleware/logger.js";
+
+mongoose.connect(
+  "mongodb+srv://node-news-api:GeicIuqZApNKbI5g@news-mongoose-uitoy.mongodb.net/test?retryWrites=true&w=majority",
+  { useNewUrlParser: true }
+);
 
 const app = express();
 const port = 3001;
@@ -15,7 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Articles API routes
 app.use("/api/news", router);
-
+("");
 app.use((req, res, next) => {
   const error = new Error("Not found");
   res.status = 404;
@@ -23,8 +29,7 @@ app.use((req, res, next) => {
 });
 
 app.use(function(error, req, res, next) {
-  console.log(error);
-  res.json({ message: error.message });
+  res.status(500).json({ message: error.message });
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
