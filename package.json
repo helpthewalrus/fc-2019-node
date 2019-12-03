@@ -1,0 +1,29 @@
+{
+  "name": "fc-2019-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app",
+    "dev": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/helpthewalrus/fc-2019-node.git"
+  },
+  "author": "Alina Tylets",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/helpthewalrus/fc-2019-node/issues"
+  },
+  "type": "module",
+  "homepage": "https://github.com/helpthewalrus/fc-2019-node#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "moment": "^2.24.0",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.1"
+  }
+}
