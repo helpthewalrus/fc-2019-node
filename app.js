@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 
-import { router } from "./api/routes/articles.js";
+import { articlesRouter } from "./api/routes/articles.js";
 import { logger } from "./middleware/logger.js";
 
 mongoose.connect(
@@ -20,8 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Articles API routes
-app.use("/api/news", router);
-("");
+app.use("/api/news", articlesRouter);
 app.use((req, res, next) => {
   const error = new Error("Not found");
   res.status = 404;

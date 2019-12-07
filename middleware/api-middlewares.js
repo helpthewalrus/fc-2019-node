@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { Article } from "../api/models/article.js";
+import { Article } from "../api/models/Article.js";
 
 const FILENAME = "./news.json";
 
