@@ -1,13 +1,12 @@
 import express from "express";
-import mongoose from "mongoose";
-import passport from "passport";
-import { checkAuth } from "../../middleware/checkAuth.js";
+import { checkAuth, sendResponse } from "../../middlewares/index.js";
 
 export const adminRouter = express.Router();
 
-adminRouter.get("/", [
-  checkAuth,
-  (req, res, next) => {
-    res.status(200).json({ message: "Admin panel is loaded" });
-  }
-]);
+const adminRequest = (req, res, next) => {
+  req.data = { message: "Admin panel is loaded" };
+  req.status = 200;
+  next();
+};
+
+adminRouter.get("/", [checkAuth, adminRequest, sendResponse]);

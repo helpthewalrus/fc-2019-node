@@ -3,10 +3,8 @@ import session from "express-session";
 import passport from "passport";
 import mongoose from "mongoose";
 
-import { articlesRouter } from "./api/routes/articles.js";
-import { userRouter } from "./api/routes/user.js";
-import { adminRouter } from "./api/routes/admin.js";
-import { logger } from "./middleware/logger.js";
+import { articlesRouter, userRouter, adminRouter } from "./api/routes/index.js";
+import { logger } from "./middlewares/index.js";
 import "./passport-config.js";
 
 mongoose.connect(
@@ -50,7 +48,7 @@ app.use("/api/user", userRouter);
 app.use("/admin", adminRouter);
 
 app.use((req, res, next) => {
-  const error = new Error("Not found");
+  const error = new Error("NOT FOUND");
   error.status = 404;
   next(error);
 });
@@ -59,4 +57,4 @@ app.use(function(error, req, res, next) {
   res.status(error.status || 500).json({ message: error.message });
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`EXAMPLE APP LISTENING ON PORT ${port}!`));
