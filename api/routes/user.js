@@ -44,7 +44,7 @@ userRouter.post("/login", function(req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/api/users/login");
+      return res.redirect("/api/user/login");
     }
     req.logIn(user, function(err) {
       if (err) {
@@ -58,6 +58,16 @@ userRouter.post("/login", function(req, res, next) {
 userRouter.get("/login", function(req, res, next) {
   res.status(200).json({ message: "Need to login" });
 });
+
+userRouter.get("/login/facebook", passport.authenticate("facebook"));
+
+userRouter.get("/login/facebook/callback", [
+  passport.authenticate("facebook", { failureRedirect: "/api/user/login" }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/api/news");
+  }
+]);
 
 userRouter.delete(
   "/:userId",

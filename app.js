@@ -51,7 +51,7 @@ app.use("/admin", adminRouter);
 
 app.use((req, res, next) => {
   const error = new Error("Not found");
-  res.status = 404;
+  error.status = 404;
   next(error);
 });
 
